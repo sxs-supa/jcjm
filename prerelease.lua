@@ -23,6 +23,7 @@ local buyingSection = pageBrainrots:addSection("Buying")
 
 local finderSection = pageBrainrots:addSection("Finder")
 finderSection:addDropdown("Select Brainrot to Find", {
+    -- Common
     "Noobini Pizzanini (Common)",
     "Lirili Larila (Common)",
     "Tim Cheese (Common)",
@@ -32,14 +33,18 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Raccooni Jandelini (Common)",
     "Pipi Kiwi (Common)",
     "Pipi Corni (Common)",
+
+    -- Rare
     "Trippi Troppi (Rare)",
     "Gangster Footera (Rare)",
     "Bandito Bobritto (Rare)",
     "Boneca Ambalabu (Rare)",
     "Cacto Hipopotamo (Rare)",
-    "Ta Ta Ta Ta Sahur (Rare)",
+    "Ta Ta Ta Sahur (Rare)",
     "Tric Trac Baraboom (Rare)",
     "Pipi Avocado (Rare)",
+
+    -- Epic
     "Cappuccino Assassino (Epic)",
     "Bandito Axolito (Epic)",
     "Brr Brr Patapim (Epic)",
@@ -55,6 +60,8 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Mangolini Parrocini (Epic)",
     "Penguino Cocosino (Epic)",
     "Salamino Penguino (Epic)",
+
+    -- Legendary
     "Burbaloni Lolololi (Legendary)",
     "Chimpanzini Bananini (Legendary)",
     "Ballerina Cappuccina (Legendary)",
@@ -71,6 +78,8 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Pi Pi Watermelon (Legendary)",
     "Signore Carapace (Legendary)",
     "Sigma Boy (Legendary)",
+
+    -- Mythic
     "Frigo Camelo (Mythic)",
     "Orangutini Ananassini (Mythic)",
     "Rhino Toasterino (Mythic)",
@@ -93,6 +102,8 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Los Noobinis (Mythic)",
     "Carloo (Mythic)",
     "Carrotini Brainini (Mythic Lucky Block)",
+
+    -- Brainrot God
     "Cocofanto Elefanto (Brainrot God)",
     "Antonio (Brainrot God)",
     "Coco Elefanto (Brainrot God)",
@@ -135,11 +146,12 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Mastodontico Telepiedone (Brainrot God Lucky Block)",
     "Anpali Babel (Brainrot God)",
     "Belula Beluga (Brainrot God)",
+
+    -- Secret
     "La Vacca Saturno Saturnita (Secret)",
-    "To to to Sahur (Secret)",
     "Bisonte Giuppitere (Secret)",
     "Los Matteos (Secret)",
-    "Karkerkar Kurkur (Secret)",
+    "La Karkerkar Combinasion (Secret)",
     "Trenostruzzo Turbo 4000 (Secret)",
     "Sammyni Spyderini (Secret)",
     "Torrtuginni Dragonfrutini (Secret Lucky Block)",
@@ -154,6 +166,8 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Guerriro Digitale (Secret)",
     "Las Tralaleritas (Secret)",
     "Job Job Job Sahur (Secret)",
+    "To To To Sahur (Secret)",
+    "La Sahur Combinasion (Secret)",
     "Las Vaquitas Saturnitas (Secret)",
     "Graipuss Medussi (Secret)",
     "Noo My Hotspot (Secret)",
@@ -164,7 +178,6 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "La Grande Combinasion (Secret)",
     "Los Combinasionas (Secret)",
     "Nuclearo Dinossauro (Secret)",
-    "Karkerkar combinasion (Secret)",
     "Los Hotspotsitos (Secret)",
     "Tralaledon (Secret)",
     "Esok Sekolah (Secret)",
@@ -175,6 +188,8 @@ finderSection:addDropdown("Select Brainrot to Find", {
     "Garama and Madundung (Secret)",
     "Spaghetti Tualetti (Secret)",
     "Dragon Cannelloni (Secret)",
+
+    -- OG
     "Strawberry Elephant (OG)"
 }, nil, function() end)
 
@@ -184,45 +199,70 @@ visualsSection:addSlider("Placeholder", 1, 10, 5, function(v) end)
 local miscSection = pageMisc:addSection("Miscellaneous")
 miscSection:addButton("Anti Hit (reset to remove)", function() end)
 miscSection:addButton("Rejoin", function()
-    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+    TeleportService:Teleport(game.PlaceId, LocalPlayer)
 end)
 miscSection:addButton("Server Hop", function()
-    local success, servers = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+    local PlaceID = game.PlaceId
+    local Success, Servers = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"))
     end)
-    if success and servers and servers.data then
-        for _, server in pairs(servers.data) do
-            if server.id ~= game.JobId and server.playing < server.maxPlayers then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id, LocalPlayer)
-                break
+    if Success and Servers and Servers.data then
+        local ServerList = {}
+        for _, v in pairs(Servers.data) do
+            if type(v) == "table" and v.id ~= game.JobId then
+                table.insert(ServerList, v.id)
             end
+        end
+        if #ServerList > 0 then
+            local RandomServer = ServerList[math.random(1,#ServerList)]
+            TeleportService:TeleportToPlaceInstance(PlaceID, RandomServer, LocalPlayer)
         end
     end
 end)
 miscSection:addButton("Exit", function()
     UI:Destroy()
 end)
-miscSection:addSlider("Walkspeed", 1, 1000, 25, function(v) end)
-miscSection:addSlider("Jump Power", 75, 2000, 75, function(v) end)
-miscSection:addToggle("Infinite Jump", false, function(v) end)
-miscSection:addToggle("Noclip", false, function(v) end)
+miscSection:addSlider("Walkspeed", 1, 1000, 25, function(v)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = v
+    end
+end)
+miscSection:addSlider("Jump Power", 1, 2000, 75, function(v)
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.JumpPower = v
+    end
+end)
+miscSection:addToggle("Infinite Jump", false, function(v)
+    _G.InfJump = v
+    if v then
+        game:GetService("UserInputService").JumpRequest:Connect(function()
+            if _G.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+            end
+        end)
+    end
+end)
+miscSection:addToggle("Noclip", false, function(v)
+    _G.Noclip = v
+    if v then
+        game:GetService("RunService").Stepped:Connect(function()
+            if _G.Noclip and LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+end)
 miscSection:addButton("Close (Left Shift to Open)", function()
     UI:Toggle()
 end)
 
 local settingsSection = pageSettings:addSection("Settings")
 settingsSection:addToggle("Auto-Load Script on Serverhop", true, function(v)
-    _G.AutoLoad = v
+    _G.JCJMAutoLoad = v
 end)
-
-if _G.AutoLoad then
-    LocalPlayer.OnTeleport:Connect(function(state)
-        if state == Enum.TeleportState.Started then
-            local scriptURL = "https://raw.githubusercontent.com/sxs-supa/jcjm/refs/heads/main/prerelease.lua"
-            local code = game:HttpGet(scriptURL)
-            loadstring(code)()
-        end
-    end)
-end
 
 UI:SelectPage(UI.pages[1], true)
