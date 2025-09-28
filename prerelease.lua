@@ -194,8 +194,27 @@ miscSection:addButton("Anti Hit (reset to remove)", function() end)
 miscSection:addButton("Rejoin", function() end)
 miscSection:addButton("Server Hop", function() end)
 miscSection:addButton("Restart", function() end)
-miscSection:addSlider("Walkspeed", 1000, 1, 25, function(v) end)
-miscSection:addSlider("Jump Power", 2000, 1, 75, function(v) end)
+local slider = miscSection:addSlider("WalkSpeed", 0, 1, 0, function(v)
+    local mappedSpeed = minSpeed + (maxSpeed - minSpeed) * v
+    local plr = game.Players.LocalPlayer
+    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+        plr.Character.Humanoid.WalkSpeed = mappedSpeed
+    end
+end)
+local minJP = 1
+local maxJP = 2000
+local defaultJP = 75
+
+miscSection:addSlider("JumpPower", maxJP, minJP, defaultJP, function(value)
+    local plr = game.Players.LocalPlayer
+    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+        plr.Character.Humanoid.JumpPower = value
+    end
+end)
+
+
+slider:SetValue(0) -- starts at 25
+
 miscSection:addToggle("Infinite Jump", false, function(v) end)
 miscSection:addToggle("Noclip", false, function(v) end)
 
