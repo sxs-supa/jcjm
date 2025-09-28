@@ -1,39 +1,27 @@
--- Load Kavo UI
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+-- Load Venyx UI
+local Venyx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Stefanuk12/Venyx-UI-Library/main/source.lua"))()
 
--- Create main window
-local Window = Library.CreateLib("JCJM Hub", "Gray") -- theme: Gray
+-- Create the main window
+local UI = Venyx.new("Test Window", 5012544693) -- second arg is optional icon ID
 
 -- Pages (Tabs)
-local TabStealing = Window:NewTab("Stealing")
-local TabVisuals  = Window:NewTab("Visuals")
-local TabMisc     = Window:NewTab("Misc")
-local TabSettings = Window:NewTab("Settings")
+local pageStealing = UI:addPage("Stealing", 5012544693)
+local pageVisuals  = UI:addPage("Visuals", 5012544693)
+local pageMisc     = UI:addPage("Misc", 5012544693)
+local pageSettings = UI:addPage("Settings", 5012544693)
 
--- Sections
-local SectionStealing = TabStealing:NewSection("Placeholder Section")
-local SectionVisuals  = TabVisuals:NewSection("Placeholder Section")
-local SectionMisc     = TabMisc:NewSection("Placeholder Section")
-local SectionSettings = TabSettings:NewSection("Placeholder Section")
+-- Sections and placeholders
+local stealingSection = pageStealing:addSection("Placeholder")
+stealingSection:addToggle("Placeholder", false, function(v) end)
 
--- Add placeholders to Stealing
-SectionStealing:NewButton("Placeholder Button", function() end)
-SectionStealing:NewToggle("Placeholder Toggle", function(state) end)
-SectionStealing:NewSlider("Placeholder Slider", 1, 100, 50, function(val) end)
+local visualsSection = pageVisuals:addSection("Placeholder")
+visualsSection:addSlider("Placeholder", 1, 10, 5, function(v) end)
 
--- Add placeholders to Visuals
-SectionVisuals:NewButton("Placeholder Button", function() end)
-SectionVisuals:NewToggle("Placeholder Toggle", function(state) end)
-SectionVisuals:NewSlider("Placeholder Slider", 1, 100, 50, function(val) end)
+local tpSection = pageTP:addSection("Placeholder")
+tpSection:addButton("Placeholder", function() end)
 
--- Add placeholders to Misc
-SectionMisc:NewButton("Placeholder Button", function() end)
-SectionMisc:NewToggle("Placeholder Toggle", function(state) end)
-SectionMisc:NewSlider("Placeholder Slider", 1, 100, 50, function(val) end)
+local infoSection = pageInfo:addSection("Placeholder")
+infoSection:addTextbox("Placeholder", "Default", function(v) end)
 
--- Add placeholders to Settings
-SectionSettings:NewButton("Placeholder Button", function() end)
-SectionSettings:NewToggle("Placeholder Toggle", function(state) end)
-SectionSettings:NewSlider("Placeholder Slider", 1, 100, 50, function(val) end)
-
--- Kavo UI windows are draggable by default
+-- Show the UI
+UI:SelectPage(UI.pages[1], true)
