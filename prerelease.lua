@@ -6,7 +6,12 @@ local pageBrainrots = UI:addPage("Brainrots", 5012544693)
 local pageVisuals  = UI:addPage("Visuals", 5012544693)
 local pageMisc     = UI:addPage("Misc", 5012544693)
 local pageSettings = UI:addPage("Settings", 5012544693)
-
+local minWS = 25
+local maxWS = 1000
+local defaultWS = 25
+local minJP = 1
+local maxJP = 2000
+local defaultJP = 75
 local stealingSection = pageBrainrots:addSection("Stealing")
 stealingSection:addButton("Tween to Base Steal (method 1)", function() end)
 stealingSection:addButton("Tween to Base Steal (method 2)", function() end)  
@@ -194,21 +199,16 @@ miscSection:addButton("Anti Hit (reset to remove)", function() end)
 miscSection:addButton("Rejoin", function() end)
 miscSection:addButton("Server Hop", function() end)
 miscSection:addButton("Restart", function() end)
-local slider = miscSection:addSlider("WalkSpeed", 0, 1, 0, function(v)
-    local mappedSpeed = minSpeed + (maxSpeed - minSpeed) * v
-    local plr = game.Players.LocalPlayer
-    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        plr.Character.Humanoid.WalkSpeed = mappedSpeed
-    end
-end)
-local minJP = 1
-local maxJP = 2000
-local defaultJP = 75
-
-miscSection:addSlider("JumpPower", maxJP, minJP, defaultJP, function(value)
+miscSection:addSlider("JumpPower", minJP, maxJP, defaultJP, function(value)
     local plr = game.Players.LocalPlayer
     if plr.Character and plr.Character:FindFirstChild("Humanoid") then
         plr.Character.Humanoid.JumpPower = value
+    end
+end)
+miscSection:addSlider("WalkSpeed", minWS, maxWS, defaultWS, function(value)
+    local plr = game.Players.LocalPlayer
+    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+        plr.Character.Humanoid.WalkSpeed = value
     end
 end)
 
