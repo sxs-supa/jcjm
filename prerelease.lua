@@ -1,10 +1,11 @@
-local Venyx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Stefanuk12/Venyx-UI-Library/main/source.lua"))()
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local TeleportService = game:GetService("TeleportService")
-local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
+local Venyx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Stefanuk12/Venyx-UI-Library/main/source.lua"))()
 local UI = Venyx.new("JCJM Hub | Steal a Brainrot", 5012544693)
 
 -- Pages
@@ -13,13 +14,9 @@ local pageVisuals  = UI:addPage("Visuals", 5012544693)
 local pageMisc     = UI:addPage("Misc", 5012544693)
 local pageSettings = UI:addPage("Settings", 5012544693)
 
--- Stealing Section
-local stealingSection = pageBrainrots:addSection("Stealing")
-
 -- Floating logic
 local verticalOffset = 0
 local floatBP
-
 local function updateFloat()
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
@@ -34,17 +31,11 @@ local function updateFloat()
         floatBP.Position = root.Position + Vector3.new(0, verticalOffset, 0)
     end
 end
+local function moveUp() verticalOffset = verticalOffset + 5 updateFloat() end
+local function moveDown() verticalOffset = verticalOffset - 5 updateFloat() end
 
-local function moveUp()
-    verticalOffset = verticalOffset + 5
-    updateFloat()
-end
-
-local function moveDown()
-    verticalOffset = verticalOffset - 5
-    updateFloat()
-end
-
+-- Brainrots Page
+local stealingSection = pageBrainrots:addSection("Stealing")
 stealingSection:addButton("Tween to Base Steal (method 1)", function() end)
 stealingSection:addButton("Tween to Base Steal (method 2)", function() end)
 stealingSection:addButton("Float to Base", function() end)
@@ -53,8 +44,7 @@ stealingSection:addButton("Move Up 5 Studs", moveUp)
 stealingSection:addButton("Move Down 5 Studs", moveDown)
 stealingSection:addToggle("Steal Boost", false, function(v) end)
 
--- Buying Section
-local buyingSection = pageBrainrots:addSection("Buying")
+-- Brainrot list
 local brainrotList = {
     "Noobini Pizzanini (Common)","Lirili Larila (Common)","Tim Cheese (Common)","FluriFlura (Common)","Talpa Di Fero (Common)","Svinina Bombardino (Common)","Raccooni Jandelini (Common)","Pipi Kiwi (Common)","Pipi Corni (Common)",
     "Trippi Troppi (Rare)","Gangster Footera (Rare)","Bandito Bobritto (Rare)","Boneca Ambalabu (Rare)","Cacto Hipopotamo (Rare)","Ta Ta Ta Ta Sahur (Rare)","Tric Trac Baraboom (Rare)","Pipi Avocado (Rare)",
@@ -66,16 +56,13 @@ local brainrotList = {
     "Strawberry Elephant (OG)"
 }
 
-finderSection = pageBrainrots:addSection("Finder")
-finderSection:addDropdown("Select Brainrot to Find", brainrotList, nil, function() end)
+pageBrainrots:addSection("Finder"):addDropdown("Select Brainrot to Find", brainrotList, nil, function() end)
+pageBrainrots:addSection("Buying"):addDropdown("Select Brainrot to Buy", brainrotList, nil, function() end)
 
-buyingSection:addDropdown("Select Brainrot to Buy", brainrotList, nil, function() end)
+-- Visuals
+pageVisuals:addSection("Visuals"):addSlider("Placeholder", 1, 10, 5, function(v) end)
 
--- Visuals Section
-local visualsSection = pageVisuals:addSection("Visuals")
-visualsSection:addSlider("Placeholder", 1, 10, 5, function(v) end)
-
--- Misc Section
+-- Misc
 local miscSection = pageMisc:addSection("Miscellaneous")
 miscSection:addButton("Anti Hit (reset to remove)", function() end)
 miscSection:addButton("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
@@ -92,12 +79,10 @@ miscSection:addButton("Server Hop", function()
             end
         end
         if #ServerList > 0 then
-            local RandomServer = ServerList[math.random(1,#ServerList)]
-            TeleportService:TeleportToPlaceInstance(PlaceID, RandomServer, LocalPlayer)
+            TeleportService:TeleportToPlaceInstance(PlaceID, ServerList[math.random(1,#ServerList)], LocalPlayer)
         end
     end
 end)
-miscSection:addButton("Exit", function() UI:Destroy() end)
 miscSection:addSlider("Walkspeed", 1, 1000, 25, function(v)
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = v
@@ -132,9 +117,8 @@ miscSection:addToggle("Noclip", false, function(v)
         end)
     end
 end)
-miscSection:addButton("Close (Left Shift to Open)", function() UI:Toggle() end)
 
--- Settings Section
+-- Settings
 local settingsSection = pageSettings:addSection("Settings")
 settingsSection:addToggle("Auto-Load Script on Serverhop", true, function(v) _G.JCJMAutoLoad = v end)
 settingsSection:addSlider("UI Scale", 50, 200, 100, function(v)
@@ -142,34 +126,61 @@ settingsSection:addSlider("UI Scale", 50, 200, 100, function(v)
     UI.container.Size = UDim2.new(UI.container.Size.X.Scale * scale, UI.container.Size.X.Offset * scale, UI.container.Size.Y.Scale * scale, UI.container.Size.Y.Offset * scale)
 end)
 
--- Title-bar dragging (PC + Mobile)
-local dragging = false
-local dragInput, dragStart, startPos
+-- Draggable Open/Close Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 60, 0, 60)
+button.Position = UDim2.new(0, 50, 0, 50)
+button.BackgroundColor3 = Color3.fromRGB(0,0,0)
+button.TextColor3 = Color3.fromRGB(255,255,255)
+button.TextScaled = true
+button.TextWrapped = true
+button.BorderSizePixel = 0
+button.Text = "Close"
+button.AnchorPoint = Vector2.new(0.5,0.5)
+button.Parent = game.CoreGui
 
-local function update(input)
-    local delta = input.Position - dragStart
-    UI.container.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0.5,0)
+uiCorner.Parent = button
+
+local function toggleGUI()
+    local targetTransparency = UI.container.BackgroundTransparency == 1 and 0 or 1
+    TweenService:Create(UI.container, TweenInfo.new(0.3), {BackgroundTransparency = targetTransparency}):Play()
+    UI.container.Visible = true
+    button.Text = targetTransparency == 0 and "Close" or "Open"
 end
 
-UI.titleBar.InputBegan:Connect(function(input)
+button.MouseButton1Click:Connect(toggleGUI)
+button.TouchTap:Connect(toggleGUI)
+
+local dragging = false
+local dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    button.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
+end
+
+button.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
-        startPos = Vector2.new(UI.container.Position.X.Offset, UI.container.Position.Y.Offset)
+        startPos = Vector2.new(button.Position.X.Offset, button.Position.Y.Offset)
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then dragging = false end
         end)
     end
 end)
 
-UI.titleBar.InputChanged:Connect(function(input)
+button.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then update(input) end
+    if input == dragInput and dragging then
+        update(input)
+    end
 end)
 
 UI:SelectPage(UI.pages[1], true)
