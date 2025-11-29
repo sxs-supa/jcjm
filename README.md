@@ -5,5 +5,9 @@ cuz
 it's in
 pre 
 beta
-fresh out the womb
-enjoy it if u can
+i might obfuscate it down the road
+but idk
+enjoy
+
+<3
+- supa
