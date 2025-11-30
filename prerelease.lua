@@ -1,186 +1,183 @@
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
+local Luna = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Softworks/Luna-Interface-Suite/refs/heads/master/source.lua", true))()
+local Window = Luna:CreateWindow({
+    Name = "Supa Hub",
+    Subtitle = "Free - Keyless",
+    LoadingEnabled = true,
+    LoadingTitle = "Supa Hub",
+    LoadingSubtitle = "Free - Keyless",
+    ConfigSettings = { RootFolder = nil, ConfigFolder = "SupaHub" },
+    KeySystem = false
+})
+
 local Players = game:GetService("Players")
-local TeleportService = game:GetService("TeleportService")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local TPUpActive = false
+local TPHeight = 5
+local HumanoidRoot = nil
+local FloatPart = nil
+local FloatActive = false
+local OriginalY = nil
+local AutoLoadEnabled = false
 
-local Venyx = loadstring(game:HttpGet("https://raw.githubusercontent.com/Stefanuk12/Venyx-UI-Library/main/source.lua"))()
-local UI = Venyx.new("JCJM Hub | Steal a Brainrot", 5012544693)
-
--- Pages
-local pageBrainrots = UI:addPage("Brainrots", 5012544693)
-local pageVisuals  = UI:addPage("Visuals", 5012544693)
-local pageMisc     = UI:addPage("Misc", 5012544693)
-local pageSettings = UI:addPage("Settings", 5012544693)
-
--- Floating logic
-local verticalOffset = 0
-local floatBP
-local function updateFloat()
-    local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        local root = char.HumanoidRootPart
-        if not floatBP then
-            floatBP = Instance.new("BodyPosition")
-            floatBP.MaxForce = Vector3.new(0, math.huge, 0)
-            floatBP.P = 1250
-            floatBP.D = 50
-            floatBP.Parent = root
-        end
-        floatBP.Position = root.Position + Vector3.new(0, verticalOffset, 0)
-    end
+local function updateCharacter()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    HumanoidRoot = character:WaitForChild("HumanoidRootPart")
+    OriginalY = HumanoidRoot.Position.Y
 end
-local function moveUp() verticalOffset = verticalOffset + 5 updateFloat() end
-local function moveDown() verticalOffset = verticalOffset - 5 updateFloat() end
 
--- Brainrots Page
-local stealingSection = pageBrainrots:addSection("Stealing")
-stealingSection:addButton("Tween to Base Steal (method 1)", function() end)
-stealingSection:addButton("Tween to Base Steal (method 2)", function() end)
-stealingSection:addButton("Float to Base", function() end)
-stealingSection:addButton("Laser Steal (requires rebirth 9)", function() end)
-stealingSection:addButton("Move Up 5 Studs", moveUp)
-stealingSection:addButton("Move Down 5 Studs", moveDown)
-stealingSection:addToggle("Steal Boost", false, function(v) end)
+updateCharacter()
+LocalPlayer.CharacterAdded:Connect(updateCharacter)
 
--- Brainrot list
-local brainrotList = {
-    "Noobini Pizzanini (Common)","Lirili Larila (Common)","Tim Cheese (Common)","FluriFlura (Common)","Talpa Di Fero (Common)","Svinina Bombardino (Common)","Raccooni Jandelini (Common)","Pipi Kiwi (Common)","Pipi Corni (Common)",
-    "Trippi Troppi (Rare)","Gangster Footera (Rare)","Bandito Bobritto (Rare)","Boneca Ambalabu (Rare)","Cacto Hipopotamo (Rare)","Ta Ta Ta Ta Sahur (Rare)","Tric Trac Baraboom (Rare)","Pipi Avocado (Rare)",
-    "Cappuccino Assassino (Epic)","Bandito Axolito (Epic)","Brr Brr Patapim (Epic)","Avocadini Antilopini (Epic)","Trulimero Trulicina (Epic)","Bambini Crostini (Epic)","Malame Amarele (Epic)","Bananita Dolphinita (Epic)","Perochello Lemonchello (Epic)","Brri Brri Bicus Dicus Bombicus (Epic)","Avocadini Guffo (Epic)","Ti Ti Ti Sahur (Epic)","Mangolini Parrocini (Epic)","Penguino Cocosino (Epic)","Salamino Penguino (Epic)",
-    "Burbaloni Lolololi (Legendary)","Chimpanzini Bananini (Legendary)","Ballerina Cappuccina (Legendary)","Chef Crabracadabra (Legendary)","Lionel Cactuseli (Legendary)","Quivioli Ameleonni (Legendary)","Glorbo Fruttodrillo (Legendary)","Caramello Filtrello (Legendary)","Pipi Potato (Legendary)","Blueberrini Octopusin (Legendary)","Strawberelli Flamingelli (Legendary)","Pandaccini Bananini (Legendary)","Cocosini Mama (Legendary)","Pi Pi Watermelon (Legendary)","Signore Carapace (Legendary)","Sigma Boy (Legendary)",
-    "Frigo Camelo (Mythic)","Orangutini Ananassini (Mythic)","Rhino Toasterino (Mythic)","Bombardiro Crocodilo (Mythic)","Brutto Gialutto (Mythic)","Spioniro Golubiro (Mythic Lucky Box)","Bombombini Gusini (Mythic)","Zibra Zubra Zibralini (Mythic Lucky Box)","Tigrilini Watermelini (Mythic Lucky Box)","Avocadorilla (Mythic)","Cavallo Virtuso (Mythic)","Gorillo Subwoofero (Mythic)","Gorillo Watermelondrillo (Mythic)","Tob Tobi Tobi (Mythic)","Lerulerulerule (Mythic)","Ganganzelli Trulala (Mythic)","Te Te Te Sahur (Mythic)","Rhino Helicopterino (Mythic)","Tracoducotulu Delapeladustuz (Mythic)","Los Noobinis (Mythic)","Carloo (Mythic)","Carrotini Brainini (Mythic Lucky Block)",
-    "Cocofanto Elefanto (Brainrot God)","Antonio (Brainrot God)","Coco Elefanto (Brainrot God)","Girafa Celestre (Brainrot God)","Gattatino Nyanino (Brainrot God)","Chihuanini Taconini (Brainrot God)","Matteo (Brainrot God)","Tralalero Tralala (Brainrot God)","Los Crocodillitos (Brainrot God)","Trigoligre Frutonni (Brainrot God Lucky Block)","Espresso Signora (Brainrot God)","Odin Din Din Dun (Brainrot God)","Statutino Libertino (Brainrot God)","Tipi Topi Taco (Brainrot God)","Unclito Samito (Brainrot God)","Alessio (Brainrot God)","Orcalero Orcala (Brainrot God)","Tralalita Tralala (Brainrot God)","Tukanno Bananno (Brainrot God)","Trenostruzzo Turbo 3000 (Brainrot God)","Urubini Flamenguini (Brainrot God)","Gattito Tacoto (Brainrot God)","Trippi Troppi Troppa Trippa (Brainrot God)","Las Cappuchinas (Brainrot God)","Ballerino Lololo (Brainrot God)","Bulbito Bandito Traktorito (Brainrot God Lucky Block)","Los Tungtungtungcitos (Brainrot God)","Pakrahmatmamat (Brainrot God)","Los Bombinitos (Brainrot God)","Brr es Teh Patipum (Brainrot God)","Piccione Macchina (Brainrot God)","Bombardini Tortini (Brainrot God)","Tractoro Dinosauro (Brainrot God)","Los Orcalitos (Brainrot God)","Orcalita Orcala (Brainrot God)","Cacasito Satalito (Brainrot God)","Tartaruga Cisterna (Brainrot God)","Los Tipi Tacos (Brainrot God)","Piccionetta Macchina (Brainrot God)","Mastodontico Telepiedone (Brainrot God Lucky Block)","Anpali Babel (Brainrot God)","Belula Beluga (Brainrot God)",
-    "La Vacca Saturno Saturnita (Secret)","Bisonte Giuppitere (Secret)","Los Matteos (Secret)","La Karkerkar Combinasion (Secret)","Trenostruzzo Turbo 4000 (Secret)","Sammyni Spyderini (Secret)","Torrtuginni Dragonfrutini (Secret Lucky Block)","Dul Dul Dul (Secret)","Blackhole Goat (Secret)","Agarrini la Palini (Secret)","Los Spyderinis (Secret)","Fragola la la la (Secret)","Chimpanzini Spiderini (Secret)","Tortuginni Dragonfruitini (Secret Lucky Block)","Los Tralaleritos (Secret)","Guerriro Digitale (Secret)","Las Tralaleritas (Secret)","Job Job Job Sahur (Secret)","To To To Sahur (Secret)","La Sahur Combinasion (Secret)","Las Vaquitas Saturnitas (Secret)","Graipuss Medussi (Secret)","Noo My Hotspot (Secret)","Sahur Combinasion (Secret)","Pot Hotspot (Secret Lucky Block)","Chicleteira Bicicleteira (Secret)","Los Nooo My Hotspotsitos (Secret)","La Grande Combinasion (Secret)","Los Combinasionas (Secret)","Nuclearo Dinossauro (Secret)","Los Hotspotsitos (Secret)","Tralaledon (Secret)","Esok Sekolah (Secret)","Ketupat Kepat (Secret)","Los Bros (Secret)","La Supreme Combinasion (Secret)","Ketchuru and Masturu (Secret)","Garama and Madundung (Secret)","Spaghetti Tualetti (Secret)","Dragon Cannelloni (Secret)",
-    "Strawberry Elephant (OG)"
-}
+-- Brainrots tab
+local Brainrots = Window:CreateTab({ Name = "Brainrots", Icon = "inventory", ImageSource = "Material", ShowTitle = true })
+Brainrots:CreateSection("Patched")
+Brainrots:CreateButton({ Name = "Instant Steal Taser", Callback = function() end })
+Brainrots:CreateButton({ Name = "Instant Steal Lamp", Callback = function() end })
+for _, name in ipairs({ "Laser Gun Spam", "Paintball Gun Spam", "Walkfling" }) do
+    Brainrots:CreateToggle({ Name = name, CurrentValue = false, Callback = function(v) end })
+end
 
-pageBrainrots:addSection("Finder"):addDropdown("Select Brainrot to Find", brainrotList, nil, function() end)
-pageBrainrots:addSection("Buying"):addDropdown("Select Brainrot to Buy", brainrotList, nil, function() end)
-
--- Visuals
-pageVisuals:addSection("Visuals"):addSlider("Placeholder", 1, 10, 5, function(v) end)
-
--- Misc
-local miscSection = pageMisc:addSection("Miscellaneous")
-miscSection:addButton("Anti Hit (reset to remove)", function() end)
-miscSection:addButton("Rejoin", function() TeleportService:Teleport(game.PlaceId, LocalPlayer) end)
-miscSection:addButton("Server Hop", function()
-    local PlaceID = game.PlaceId
-    local Success, Servers = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"))
-    end)
-    if Success and Servers and Servers.data then
-        local ServerList = {}
-        for _, v in pairs(Servers.data) do
-            if type(v) == "table" and v.id ~= game.JobId then
-                table.insert(ServerList, v.id)
+Brainrots:CreateSection("Stealing")
+Brainrots:CreateToggle({ Name = "Anti Hit", CurrentValue = false, Callback = function(v) end })
+Brainrots:CreateToggle({ Name = "Desync", CurrentValue = false, Callback = function(v) end })
+Brainrots:CreateButton({ Name = "Permanent Desync", Callback = function() end })
+Brainrots:CreateToggle({
+    Name = "TP Up",
+    CurrentValue = false,
+    Callback = function(v)
+        TPUpActive = v
+        if v and HumanoidRoot then
+            OriginalY = HumanoidRoot.Position.Y
+        elseif not v and HumanoidRoot then
+            HumanoidRoot.CFrame = CFrame.new(HumanoidRoot.Position.X, OriginalY, HumanoidRoot.Position.Z)
+        end
+    end
+})
+Brainrots:CreateToggle({ Name = "Steal Boost", CurrentValue = false, Callback = function(v) end })
+Brainrots:CreateToggle({ Name = "Kick on Steal", CurrentValue = false, Callback = function(v) end })
+Brainrots:CreateToggle({
+    Name = "Float",
+    CurrentValue = false,
+    Callback = function(v)
+        FloatActive = v
+        if v then
+            if not FloatPart then
+                FloatPart = Instance.new("Part")
+                FloatPart.Anchored = true
+                FloatPart.CanCollide = true
+                FloatPart.Size = Vector3.new(5,0.2,5)
+                FloatPart.Color = Color3.fromRGB(0,170,255)
+                FloatPart.Transparency = 0.5
+                FloatPart.Parent = workspace
+            end
+        else
+            if FloatPart then
+                FloatPart:Destroy()
+                FloatPart = nil
             end
         end
-        if #ServerList > 0 then
-            TeleportService:TeleportToPlaceInstance(PlaceID, ServerList[math.random(1,#ServerList)], LocalPlayer)
-        end
     end
-end)
-miscSection:addSlider("Walkspeed", 1, 1000, 25, function(v)
+})
+
+Brainrots:CreateSection("Buy / Sell")
+local BrainrotList = { "Noobini Pizzanini", "Coming Soon" }
+Brainrots:CreateDropdown({ Name = "Auto-Buy", Options = BrainrotList, CurrentOption = {BrainrotList[1]}, MultipleOptions = true, Callback = function(v) end })
+Brainrots:CreateDropdown({ Name = "Auto-Buy Rarity", Options = {"Common","Rare","Epic","Legendary","Mythic","Brainrot God","Secret","OG"}, CurrentOption = {"Common"}, MultipleOptions = true, Callback = function(v) end })
+Brainrots:CreateDropdown({ Name = "Auto-Sell", Options = BrainrotList, CurrentOption = {BrainrotList[1]}, MultipleOptions = true, Callback = function(v) end })
+Brainrots:CreateDropdown({ Name = "Auto-Sell Rarity", Options = {"Common","Rare","Epic","Legendary","Mythic","Brainrot God","Secret","OG"}, CurrentOption = {"Common"}, MultipleOptions = true, Callback = function(v) end })
+
+-- ESP tab
+local ESP = Window:CreateTab({ Name = "ESP", Icon = "visibility", ImageSource = "Material", ShowTitle = true })
+ESP:CreateSection("ESP")
+for _, name in ipairs({ "Player Boxes", "Player Tracers", "Base Timer ESP", "Base Glow", "Base X-Ray", "Base Tracers", "Camera Noclip", "Fullbright" }) do
+    ESP:CreateToggle({ Name = name, CurrentValue = false, Callback = function(v) end })
+end
+ESP:CreateColorPicker({ Name = "ESP Color", Color = Color3.new(1,1,1), Callback = function(c) end })
+ESP:CreateToggle({ Name = "Rainbow ESP", CurrentValue = false, Callback = function(v) end })
+
+-- Miscellaneous tab
+local Misc = Window:CreateTab({ Name = "Miscellaneous", Icon = "build", ImageSource = "Material", ShowTitle = true })
+Misc:CreateSection("Miscellaneous")
+Misc:CreateSlider({ Name = "Walk Speed", Range = {1,500}, Increment = 1, CurrentValue = 16, Callback = function(v)
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = v
     end
-end)
-miscSection:addSlider("Jump Power", 1, 2000, 75, function(v)
+end })
+Misc:CreateSlider({ Name = "Jump Power", Range = {1,200}, Increment = 1, CurrentValue = 50, Callback = function(v)
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.JumpPower = v
     end
-end)
-miscSection:addToggle("Infinite Jump", false, function(v)
-    _G.InfJump = v
-    if v then
-        UserInputService.JumpRequest:Connect(function()
-            if _G.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid:ChangeState("Jumping")
+end })
+Misc:CreateToggle({ Name = "Infinite Jump", CurrentValue = false, Callback = function(v) _G.InfJump = v end })
+Misc:CreateToggle({ Name = "Noclip", CurrentValue = false, Callback = function(v) _G.Noclip = v end })
+
+-- Finder tab
+local Finder = Window:CreateTab({ Name = "Finder", Icon = "search", ImageSource = "Material", ShowTitle = true })
+Finder:CreateSection("Finder")
+Finder:CreateToggle({ Name = "Start Serverhop", CurrentValue = false, Callback = function(v) _G.FinderServerhop = v end })
+Finder:CreateDropdown({ Name = "Brainrot To Find", Options = BrainrotList, CurrentOption = {BrainrotList[1]}, MultipleOptions = false, Callback = function(v) end })
+Finder:CreateDropdown({ Name = "Rarity To Find", Options = {"Common","Rare","Epic","Legendary","Mythic","Brainrot God","Secret","OG"}, CurrentOption = {"Common"}, MultipleOptions = false, Callback = function(v) end })
+Finder:CreateSlider({
+    Name = "Money To Find",
+    Range = {1000,30000000000},
+    Increment = 1000,
+    CurrentValue = 10000000,
+    Format = function(value)
+        if value >= 1e9 then
+            return math.floor(value/1e9).."b"
+        elseif value >= 1e6 then
+            return math.floor(value/1e6).."m"
+        elseif value >= 1e3 then
+            return math.floor(value/1e3).."k"
+        else
+            return value
+        end
+    end,
+    Callback = function(v) _G.FinderMoneyTarget = v end
+})
+
+-- Settings tab
+local Settings = Window:CreateTab({ Name = "Settings", Icon = "settings", ImageSource = "Material", ShowTitle = true })
+Settings:CreateSection("Settings")
+Settings:CreateToggle({ Name = "Auto-Load", CurrentValue = false, Callback = function(v) AutoLoadEnabled = v end })
+Settings:CreateButton({ Name = "Rejoin", Callback = function() game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer) end })
+Settings:CreateButton({ Name = "Serverhop", Callback = function()
+    local TeleportService = game:GetService("TeleportService")
+    local PlaceId = game.PlaceId
+    local Servers = {}
+    local Success,Response = pcall(function()
+        return game.HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
+    end)
+    if Success and Response.data then
+        for _,s in pairs(Response.data) do
+            if s.id ~= game.JobId and s.maxPlayers > s.playing then
+                table.insert(Servers,s.id)
             end
-        end)
+        end
     end
-end)
-miscSection:addToggle("Noclip", false, function(v)
-    _G.Noclip = v
-    if v then
-        RunService.Stepped:Connect(function()
-            if _G.Noclip and LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
+    if #Servers > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceId, Servers[math.random(1,#Servers)], LocalPlayer)
     end
-end)
+end })
+Settings:CreateButton({ Name = "Leave", Callback = function() LocalPlayer:Kick("Left via Supa Hub") end })
+Settings:CreateSlider({ Name = "UI Scale", Range = {50,200}, Increment = 1, CurrentValue = 50, Callback = function(v) Window:SetScale(v/100) end })
 
--- Settings
-local settingsSection = pageSettings:addSection("Settings")
-settingsSection:addToggle("Auto-Load Script on Serverhop", true, function(v) _G.JCJMAutoLoad = v end)
-settingsSection:addSlider("UI Scale", 50, 200, 100, function(v)
-    local scale = v / 100
-    UI.container.Size = UDim2.new(UI.container.Size.X.Scale * scale, UI.container.Size.X.Offset * scale, UI.container.Size.Y.Scale * scale, UI.container.Size.Y.Offset * scale)
-end)
-
--- Draggable Open/Close Button
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0, 60, 0, 60)
-button.Position = UDim2.new(0, 50, 0, 50)
-button.BackgroundColor3 = Color3.fromRGB(0,0,0)
-button.TextColor3 = Color3.fromRGB(255,255,255)
-button.TextScaled = true
-button.TextWrapped = true
-button.BorderSizePixel = 0
-button.Text = "Close"
-button.AnchorPoint = Vector2.new(0.5,0.5)
-button.Parent = game.CoreGui
-
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0.5,0)
-uiCorner.Parent = button
-
-local function toggleGUI()
-    local targetTransparency = UI.container.BackgroundTransparency == 1 and 0 or 1
-    TweenService:Create(UI.container, TweenInfo.new(0.3), {BackgroundTransparency = targetTransparency}):Play()
-    UI.container.Visible = true
-    button.Text = targetTransparency == 0 and "Close" or "Open"
+-- Auto-Load function on teleport
+if AutoLoadEnabled then
+    Players.LocalPlayer.OnTeleport:Connect(function()
+        loadstring(game:HttpGet("SCRIPT_URL_HERE"))()
+    end)
 end
 
-button.MouseButton1Click:Connect(toggleGUI)
-button.TouchTap:Connect(toggleGUI)
-
-local dragging = false
-local dragInput, dragStart, startPos
-local function update(input)
-    local delta = input.Position - dragStart
-    button.Position = UDim2.new(0, startPos.X + delta.X, 0, startPos.Y + delta.Y)
-end
-
-button.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = Vector2.new(button.Position.X.Offset, button.Position.Y.Offset)
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
+-- TP Up and Float loop
+spawn(function()
+    while true do
+        if TPUpActive and HumanoidRoot then
+            HumanoidRoot.CFrame = CFrame.new(HumanoidRoot.Position.X, OriginalY + TPHeight, HumanoidRoot.Position.Z)
+        end
+        if FloatActive and HumanoidRoot and FloatPart then
+            FloatPart.Position = Vector3.new(HumanoidRoot.Position.X, HumanoidRoot.Position.Y - 2.5, HumanoidRoot.Position.Z)
+        end
+        wait(0.05)
     end
 end)
-
-button.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
-end)
-
-UI:SelectPage(UI.pages[1], true)
